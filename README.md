@@ -1,1 +1,41 @@
 # Welcome to the signature replacer repo!
+
+Signature replacer was made as a tool to aid with other modules, such as FastAPI, which inspect function signatures. It allows you to replace one or more arguments in a function signature, and replace them with multiple arguments.
+
+# Using replace arg
+```py
+@replace_arg(
+    'gentoo', 
+    new1 = {'annotation' : str}, 
+    new2 = {'annotation' : int}
+)
+def test_func(gentoo):
+    return gentoo
+
+
+test_func('test', new2 = 1)
+# {'new1': 'test', 'new2': 1}
+```
+
+# Using replace args
+
+Note: all replaced arguments are listed in the order they are defined, and additional arguments are placed at the end.
+
+```py
+@replace_args(
+    new1 = {
+        'replaces': 'gentoo',
+        'annotation': str
+    },
+    new2 = {'replaces': 'gentoo'},
+    new3 = {'replaces': 'adelie'}
+)
+def test_func(gentoo, rockhopper, adelie):
+    return [gentoo, rockhopper, adelie]
+
+test_func('test',1,2,3)
+
+# [{'new1': 'test', 'new2': 1}, 3, {'new3': 2}]
+
+
+```
