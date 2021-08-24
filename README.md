@@ -1,6 +1,6 @@
-# Welcome to the signature replacer repo!
+# Welcome to the mutate function repo!
 
-Signature replacer was made as a tool to aid with other modules, such as FastAPI, which inspect function signatures. It allows you to replace one or more arguments in a function signature, and replace them with multiple arguments.
+Mutate function was made as a tool to aid with other modules, such as FastAPI, which inspect function signatures. It allows you to replace one or more arguments in a function, and replace them with multiple arguments. This changes both the function interface and the function signature
 
 # Using replace arg
 ```py
