@@ -1,4 +1,4 @@
-from mutate_function import replace_args
+from mutate_function import replace_args, replace_arg
 import pytest
 from copy import copy
 
@@ -288,14 +288,14 @@ class TestReplaceArgsRogueErrors:
             assert str(e) == 'test_func() missing 4 required positional arguments: emporer, rockhopper, test and test2'
 
     async def test_invalid_body_no_args_some_supplied(self):
-        @replace_args()
-        def test_func():
+        @replace_arg('test2')
+        def test_func(test2):
             pass
         try:
             test_func('test')
         except TypeError as e:
             assert str(e) == 'test_func() takes 0 positional arguments but 1 was given'
-
+    
     async def test_invalid_body_no_args_multiple_overwritten(self):
         @replace_args(adelie = {'replaces': 'gentoo', 'default': 3}, emporer = {'replaces': 'gentoo', 'default': 4})
         def test_func(gentoo, rockhopper = 2):
