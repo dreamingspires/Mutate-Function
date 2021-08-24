@@ -1,13 +1,26 @@
 from inspect import signature, iscoroutinefunction
 from functools import wraps
 from copy import deepcopy
+from typing import Dict
 
-def swap_arg_name_in_function(function, new_arg_name, old_arg_name):
-    def inner(*args, **kwargs):
-        if new_arg_name in kwargs:
-            kwargs[old_arg_name] = kwargs.pop(new_arg_name)
-        return function(*args, **kwargs)
-    return inner
+def replace_arg_simple(new_arg_name: str, old_arg_name: str):
+    """
+    A much more simple version of replace arg.
+
+    Replaces one arg name for another.
+    Does not change function signatures.
+    Compatible with functions containing *args or **kwargs.
+
+    :param new_arg_name: The new name of the argument.
+    :param old_arg_name: The old name of the argument.
+    """
+    def replace_arg_simple_inner(function):
+        def inner(*args, **kwargs):
+            if new_arg_name in kwargs:
+                kwargs[old_arg_name] = kwargs.pop(new_arg_name)
+            return function(*args, **kwargs)
+        return inner
+    return replace_arg_simple_inner
 
 class MissingPositionals(TypeError):
     def __init__(self, function_name, args_list):
@@ -41,7 +54,26 @@ class TooManyPositionals(TypeError):
             plural = 'were'
         super().__init__(f'{function_name}() takes {n_takes} positional {argument_word} but {n_supplied} {plural} given')
 
-def replace_arg(parameter_to_replace, **new_args_to_replace):
+def replace_arg(parameter_to_replace: str, **new_args_to_replace: Dict[str, type]):
+    """
+    Replaces one argument in a function with multiple.
+
+    :param parameter_to_replace: The name of the argument to be replaced.
+    :param new_args_to_replace: All additional keyword arguments will be taken as follows:
+
+    The key becomes the name of the argument replacing the parameter.
+    The value is a dict detailing the configuration of the replacement.
+
+    Acceptable values in the dict are:
+
+    'annotation': The type annotation of the new field. (optional)
+    'default': The default value of the argument. (optional)
+    'kind': The kind of the parameter. (Note: Experimental, change at your own risk) (optional)
+    
+    e.g. test = {'annotation': str}
+
+    Incompatible with functions containing *args or **kwargs
+    """
     def replace_arg_inner(f):
         def replace_signature(source, destination, parameters):
             destination.__signature__ = signature(source).replace(parameters=parameters)
@@ -125,7 +157,25 @@ def replace_arg(parameter_to_replace, **new_args_to_replace):
         return replace_signature(f, inner, new_parameters)
     return replace_arg_inner
 
-def replace_args(**new_args_to_replace):
+def replace_args(**new_args_to_replace: Dict[str, type]):
+    """
+    Replaces multiple arguments in a function with multiple.
+
+    :param new_args_to_replace: All keyword arguments will be taken as follows:
+
+    The key becomes the name of the argument replacing the parameter.
+    The value is a dict detailing the configuration of the replacement.
+
+    Acceptable values in the dict are:
+    'replaces': The field to replace (required)
+    'annotation': The type annotation of the new field. (optional)
+    'default': The default value of the argument. (optional)
+    'kind': The kind of the parameter. (Note: Experimental, change at your own risk) (optional)
+    
+    e.g. test = {'replaces': 'test2', 'annotation': str}
+
+    Incompatible with functions containing *args or **kwargs
+    """
     def replace_args_inner(f):
         function_groups = {}
         for arg_name, details in new_args_to_replace.items():
